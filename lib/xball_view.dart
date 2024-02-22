@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'dart:ui' as ui;
 
 //手指按下时命中的point
-PointAnimationSequence pointAnimationSequence;
+PointAnimationSequence? pointAnimationSequence;
 
 //球半径
 int radius = 150;
@@ -20,10 +20,10 @@ class XBallView extends StatefulWidget {
   final List<String> highlight;
 
   const XBallView({
-    Key key,
-    @required this.mediaQueryData,
-    @required this.keywords,
-    @required this.highlight,
+    Key? key,
+    required this.mediaQueryData,
+    required this.keywords,
+    required this.highlight,
   }) : super(key: key);
 
   @override
@@ -35,19 +35,19 @@ class XBallView extends StatefulWidget {
 class _XBallViewState extends State<XBallView>
     with SingleTickerProviderStateMixin {
   //带光晕的球图片宽度
-  double sizeOfBallWithFlare;
+  double? sizeOfBallWithFlare;
 
   List<Point> points = [];
 
-  Animation<double> animation;
-  AnimationController controller;
+  Animation<double>? animation;
+  AnimationController? controller;
   double currentRadian = 0;
 
   //手指移动的上一个位置
-  Offset lastPosition;
+  Offset? lastPosition;
 
   //手指按下的位置
-  Offset downPosition;
+  Offset? downPosition;
 
   //上次点击并命中关键词的时间
   int lastHitTime = 0;
@@ -61,7 +61,7 @@ class _XBallViewState extends State<XBallView>
 
     //计算球尺寸、半径等
     sizeOfBallWithFlare = widget.mediaQueryData.size.width - 2 * 10;
-    double sizeOfBall = sizeOfBallWithFlare * 32 / 35;
+    double sizeOfBall = sizeOfBallWithFlare! * 32 / 35;
     radius = (sizeOfBall / 2).round();
 
     //初始化点
@@ -70,22 +70,22 @@ class _XBallViewState extends State<XBallView>
     //动画
     controller = AnimationController(
         duration: Duration(milliseconds: 40000), vsync: this);
-    animation = Tween(begin: 0.0, end: pi * 2).animate(controller);
-    animation.addListener(() {
+    animation = Tween(begin: 0.0, end: pi * 2).animate(controller!);
+    animation!.addListener(() {
       setState(() {
         for (int i = 0; i < points.length; i++) {
-          rotatePoint(axisVector, points[i], animation.value - currentRadian);
+          rotatePoint(axisVector, points[i], animation!.value - currentRadian);
         }
-        currentRadian = animation.value;
+        currentRadian = animation!.value;
       });
     });
-    animation.addStatusListener((status) {
+    animation!.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
         currentRadian = 0;
-        controller.forward(from: 0.0);
+        controller!.forward(from: 0.0);
       }
     });
-    controller.forward();
+    controller!.forward();
   }
 
   @override
@@ -239,10 +239,10 @@ class _XBallViewState extends State<XBallView>
 
         //速度跟踪队列
         clearQueue();
-        addToQueue(PositionWithTime(downPosition, now));
+        addToQueue(PositionWithTime(downPosition!, now));
 
         //手指触摸时停止动画
-        controller.stop();
+        controller!.stop();
       },
       onPointerMove: (PointerMoveEvent event) {
         int now = DateTime.now().millisecondsSinceEpoch;
@@ -250,8 +250,8 @@ class _XBallViewState extends State<XBallView>
 
         addToQueue(PositionWithTime(currentPostion, now));
 
-        Offset delta = Offset(currentPostion.dx - lastPosition.dx,
-            currentPostion.dy - lastPosition.dy);
+        Offset delta = Offset(currentPostion.dx - lastPosition!.dx,
+            currentPostion.dy - lastPosition!.dy);
         double distance = sqrt(delta.dx * delta.dx + delta.dy * delta.dy);
         //若计算量级太小，框架内部会报精度溢出的错误
         if (distance > 2) {
@@ -282,17 +282,17 @@ class _XBallViewState extends State<XBallView>
         if (sqrt(velocity.dx * velocity.dx + velocity.dy * velocity.dy) >= 1) {
           //开始fling动画
           currentRadian = 0;
-          controller.fling();
+          controller!.fling();
         } else {
           //开始匀速动画
           currentRadian = 0;
-          controller.forward(from: 0.0);
+          controller!.forward(from: 0.0);
         }
 
         //检测点击事件
         double distanceSinceDown = sqrt(
-            pow(upPosition.dx - downPosition.dx, 2) +
-                pow(upPosition.dy - downPosition.dy, 2));
+            pow(upPosition.dx - downPosition!.dx, 2) +
+                pow(upPosition.dy - downPosition!.dy, 2));
         //按下和抬起点的距离小于4，认为是点击事件
         if (distanceSinceDown < 4) {
           //寻找命中的point
@@ -325,7 +325,7 @@ class _XBallViewState extends State<XBallView>
       onPointerCancel: (_) {
         //开始匀速动画
         currentRadian = 0;
-        controller.forward(from: 0.0);
+        controller!.forward(from: 0.0);
       },
       child: ClipOval(
         child: CustomPaint(
@@ -374,7 +374,7 @@ class _XBallViewState extends State<XBallView>
 
 class MyPainter extends CustomPainter {
   List<Point> points;
-  Paint ballPaint, pointPaint;
+  late Paint ballPaint, pointPaint;
 
   MyPainter(this.points) {
     ballPaint = Paint()
@@ -398,10 +398,10 @@ class MyPainter extends CustomPainter {
       ui.Paragraph p;
       //是被选中的点，需要展示放大缩小效果
       if (pointAnimationSequence != null &&
-          pointAnimationSequence.point == points[i]) {
+          pointAnimationSequence!.point == points[i]) {
         //动画未播放完毕
-        if (pointAnimationSequence.paragraphs.isNotEmpty) {
-          p = pointAnimationSequence.paragraphs.removeFirst();
+        if (pointAnimationSequence!.paragraphs.isNotEmpty) {
+          p = pointAnimationSequence!.paragraphs.removeFirst();
           //动画已播放完毕
         } else {
           p = points[i].getParagraph(radius);
@@ -539,9 +539,9 @@ double getFontOpacity(double z) {
 }
 
 class Point {
-  double x, y, z;
-  String name;
-  List<ui.Paragraph> paragraphs;
+  late double x, y, z;
+  late String name;
+  late List<ui.Paragraph> paragraphs;
 
   Point(this.x, this.y, this.z);
 
@@ -563,7 +563,7 @@ class PositionWithTime {
 class PointAnimationSequence {
   Point point;
   bool needHighLight;
-  Queue<ui.Paragraph> paragraphs;
+  late Queue<ui.Paragraph> paragraphs;
 
   PointAnimationSequence(this.point, this.needHighLight) {
     paragraphs = Queue();
