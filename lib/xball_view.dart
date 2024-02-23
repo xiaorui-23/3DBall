@@ -1,6 +1,5 @@
 import 'dart:collection';
 import 'dart:math';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'dart:ui' as ui;
 
@@ -8,10 +7,17 @@ import 'dart:ui' as ui;
 PointAnimationSequence? pointAnimationSequence;
 
 //球半径
-int radius = 150;
+late int radius;
 
 class XBallView extends StatefulWidget {
   final MediaQueryData mediaQueryData;
+
+
+  final double width;
+  final BoxDecoration? decoration;
+  final Widget topLeftImage;
+  final Widget? ballWidget;
+  final Widget bottomShadow;
 
   ///需要展示的关键词
   final List<String> keywords;
@@ -24,6 +30,11 @@ class XBallView extends StatefulWidget {
     required this.mediaQueryData,
     required this.keywords,
     required this.highlight,
+    required this.width,
+    required this.topLeftImage,
+    required this.bottomShadow,
+    this.ballWidget,
+    this.decoration,
   }) : super(key: key);
 
   @override
@@ -60,7 +71,7 @@ class _XBallViewState extends State<XBallView>
     super.initState();
 
     //计算球尺寸、半径等
-    sizeOfBallWithFlare = widget.mediaQueryData.size.width - 2 * 10;
+    sizeOfBallWithFlare = widget.width - 2 * 10;
     double sizeOfBall = sizeOfBallWithFlare! * 32 / 35;
     radius = (sizeOfBall / 2).round();
 
@@ -160,7 +171,7 @@ class _XBallViewState extends State<XBallView>
   ///检查此关键字是否需要高亮
   bool _needHight(String keyword) {
     bool ret = false;
-    if (widget.highlight != null && widget.highlight.length > 0) {
+    if (widget.highlight.isNotEmpty) {
       for (int i = 0; i < widget.highlight.length; i++) {
         if (keyword == widget.highlight[i]) {
           ret = true;
@@ -177,7 +188,7 @@ class _XBallViewState extends State<XBallView>
       body: Container(
         width: double.infinity,
         height: double.infinity,
-        decoration: BoxDecoration(
+        decoration: widget.decoration ?? BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
@@ -193,12 +204,7 @@ class _XBallViewState extends State<XBallView>
             Positioned(
               left: 0,
               top: 0,
-              child: Image.asset(
-                "images/symptom_light@3x.png",
-                width: 260,
-                height: 260,
-                fit: BoxFit.fill,
-              ),
+              child: widget.topLeftImage,
             ),
             Column(
               mainAxisSize: MainAxisSize.min,
@@ -207,21 +213,17 @@ class _XBallViewState extends State<XBallView>
                 Stack(
                   alignment: Alignment.center,
                   children: <Widget>[
-                    Image.asset(
-                      "images/symptom_ballwithflare@3x.png",
+                    widget.ballWidget ?? Image.asset(
+                      "assets/symptom_ballwithflare.png",
                       width: sizeOfBallWithFlare,
                       height: sizeOfBallWithFlare,
                       fit: BoxFit.fill,
+                      package: 'three_d_ball',
                     ),
                     _buildBall(),
                   ],
                 ),
-                Image.asset(
-                  "images/symptom_ball_shadow@3x.png",
-                  width: 260,
-                  height: 20,
-                  fit: BoxFit.fill,
-                ),
+                widget.bottomShadow,
               ],
             ),
           ],
